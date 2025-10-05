@@ -35,3 +35,15 @@
 - Write a dummy auth middleware for admin
 - Write a dummy auth middleware for all user routes
 - Error handling 
+
+- Create a free cluster on mongoDB official website (Mongo Atlas)
+- Install Mongoose
+- Connect your appliaction to db
+- Connect to db before starting the server to listen
+- Create a userSchema and userModel
+- Create POST /signup API to add the data to db 
+- Push some documents using API calls from postman
+
+- Js objects vs JSON
+- Add the express.json middleware to your app
+- Make your signup API dynamic to receive the data from end user

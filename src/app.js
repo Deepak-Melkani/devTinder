@@ -1,150 +1,73 @@
 const express = require('express');
-
+const connectDB = require('./config/database');  
+const User = require('./models/user');
 const app = express();
 
-// "scripts": {                 // In package.json file (use npm start or npm run dev to run the server)
-//     "start": "node app.js",
-//     "dev": "nodemon app.js"
-//   }
+// Pushing the data to the database using a POST request
+// app.post('/signup', async (req, res) => {
+//     const user = new User({     // Creating a new user instance of the User model
+//         firstName: 'Harshit',
+//         lastName: 'Pandey',
+//         emailId: 'harshit.pandey@example.com', 
+//         password: 'harshit123'
+//     });
 
-// app.use((req, res) => {                          // Basic template for sending response
-//     res.send('Server ki taraf se ram ram')
+//     try{
+//         await user.save();
+//         res.send('User added successfully'); 
+//     } catch(err){
+//         res.status(400).send('Error in saving the user');
+//     }
 // });
 
-app.get('/test', (req, res) => {        // Only works for GET request, .use can be used for all requests
-    res.send({firstName: 'Deepak', lastName: 'Melkani'});
-});
 
-app.get('/user', (req, res) => {    
-    console.log(req.query);          // Accessing query parameters from URL (e.g. /user?name=deepak&age=21)    
-    res.send({firstName: 'Deepak', lastName: 'Melkani'}); 
-});
-
-app.get('/user/:id/:name/:password', (req, res) => {      // Accessing route parameters from URL (e.g. /user/123/deepak/abcd)
-    console.log(req.params);
-    res.send({firstName: 'Deepak', lastName: 'Melkani', id: req.params.id, name: req.params.name, password: req.params.password});
-});
-
-
-
-
-
-
-
-// Regular expression in routes
-app.get('/ab?cd', (req, res) => {        // ? means the preceding character is optional, b can appear once or not at all
-    res.send('ab?cd');
-});
-
-app.get('/ab+cd', (req, res) => {        // + means the preceding character must appear at least once, b must appear once or more
-    res.send('ab+cd');
-});
-
-app.get('/ab*cd', (req, res) => {        // * means the preceding character can appear any number of times, anything can appear in place of * (including nothing) 
-    res.send('ab*cd');
-});
-
-app.get('/ab(cd)?e', (req, res) => {     // () groups the characters, cd can appear once or not at all
-    res.send('ab(cd)?e');
-});
-
-app.get(/a/, (req, res) => {           // Regular expression without any string, matches any route containing 'a', e.g. /a, /abc, /abcd, /bca, /xyzabc
-    res.send('/a/');
-});
-
-app.get(/.*fly$/, (req, res) => {      // Matches any route ending with 'fly' (e.g. butterfly, dragonfly), .* means any character (.) can appear any number of times (*)
-    res.send('/.*fly$/');
-});
-
-
-
-
-
-
-
-app.post('/test', (req, res) => {       // Only works for POST request
-    res.send('Post request on /test');
-});
-
-app.use('/test', (req, res) => { // Adding another route (Anything after /test will not be considered), works for all requests 
-    res.send('<h1>Test Route</h1>');
-});
-
-app.use('/hello',(req, res) => {     // Adding another route (Anything after /hello will not be considered)
-    res.send('<h1>Hello Route</h1>')
-});
-
-app.use('/', (req, res) => {//Adding a route (Anything after / will not be considered) Order matters, so this should be at the end
-    res.send('<h1>Home Route</h1>')
-});
-
-
-
-// Multiple callback functions
-// If we send response in the first callback, the next callback will not be executed
-// To pass the control to the next callback function, we need to use next() 
-// If we use next() in last callback, it will give error as there is no next callback to execute
-// We can also wrap the callbacks in an array like app.use('/user', [cb1, cb2, cb3]) or use a combination of both array and individual callbacks like app.use('/user', [cb1, cb2], cb3, [cb4, cb5]) but there is no change in the working of the code
-app.use(
-    '/user', (req, res, next) => {
-        console.log('First callback');
-        res.send('First response');   // If response is sent, the next callback will not be executed
-        next();      // To pass the control to the next callback function
-    },
-    (req, res, next) => {
-        console.log('Second callback');
-        res.send('Second response'); // This will give error since response is already sent in the first callback   
-        next();
-    }
-)
-
-
-
-// When there are multiplle callbacks with the matching route then all of the one that sends the response is a request handler and rest is a chain of middlewares, and generally we use app.use() for middlewares
-
-
-
-
-
-
-// Example to demonstrate the use case of middlewares 
-const { adminAuth } = require('./middlewares/adminAuth.js');  // Importing the adminAuth middleware
-app.use('/admin', adminAuth);
-
-// All the routes starting with /admin will go through the adminAuth middleware first
-
-app.get('/admin/getAllData', (req, res, next) => { // It is guaranteed that this callback will be executed only if the user is admin
-   res.send('All the data from the server');
-})
-
-app.get('/admin/deleteAllData', (req, res, next) => {
-   res.send('All the data has been deleted from the server');
-});
-
-
-
-
-
-//Handling errors using try-catch and wildcard error handling middleware
-// If there is an error in the first callback, the second callback will not be executed
-// To pass the error to the next callback function, we need to use next(err)
-app.get('/userdata', (req, res, next) => {
+// Middleware to parse JSON bodies, enabling us to access the content of the request body
+app.use(express.json());
+app.post('/signup', async (req, res) => {
+    console.log(req.body); // Log the request body to the console
+    const user = new User(req.body); // Create a new user instance with the data from the request body
     try {
-        // Some code that may throw an error
-        throw new Error('Some error occurred while fetching user data');  // Simulating an error
-        res.send('User data');
-    } catch (err) {  
-        res.status(500).send('Internal Server Error');
+        await user.save(); // Save the user to the database
+        res.send('User added successfully'); // Send a success response
+    } catch (err) {
+        res.status(400).send('Error in saving the user'); // Send an error response if saving fails
     }
 });
 
-app.use('/', (err, req, res, next) => { //Wildcard error handling middleware
-    if(err) {
-        // Log your error
-        res.status(500).send('Some error occurred');
-    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+connectDB().then(() => { // Connect to the database first before starting the server 
+    console.log("Database connected successfully");
+    app.listen(3000, () => {
+    console.log('Server is successfully listening on port 3000');
+});
+}).catch((err) => {
+    console.log("Error in connecting to the database", err);
 });
   
-app.listen(3000, () => {
-  console.log('Server is successfully listening on port 3000');
-});
+
