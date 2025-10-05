@@ -25,6 +25,12 @@ app.get('/user/:id/:name/:password', (req, res) => {      // Accessing route par
     res.send({firstName: 'Deepak', lastName: 'Melkani', id: req.params.id, name: req.params.name, password: req.params.password});
 });
 
+
+
+
+
+
+
 // Regular expression in routes
 app.get('/ab?cd', (req, res) => {        // ? means the preceding character is optional, b can appear once or not at all
     res.send('ab?cd');
@@ -71,6 +77,29 @@ app.use('/hello',(req, res) => {     // Adding another route (Anything after /he
 app.use('/', (req, res) => {//Adding a route (Anything after / will not be considered) Order matters, so this should be at the end
     res.send('<h1>Home Route</h1>')
 });
+
+
+
+// Multiple callback functions
+// If we send response in the first callback, the next callback will not be executed
+// To pass the control to the next callback function, we need to use next() 
+// If we use next() in last callback, it will give error as there is no next callback to execute
+// We can also wrap the callbacks in an array like app.use('/user', [cb1, cb2, cb3]) or use a combination of both array and individual callbacks like app.use('/user', [cb1, cb2], cb3, [cb4, cb5]) but there is no change in the working of the code
+app.use(
+    '/user', (req, res, next) => {
+        console.log('First callback');
+        res.send('First response');   // If response is sent, the next callback will not be executed
+        next();      // To pass the control to the next callback function
+    },
+    (req, res, next) => {
+        console.log('Second callback');
+        res.send('Second response'); // This will give error since response is already sent in the first callback   
+        next();
+    }
+)
+
+
+
 
 
 
