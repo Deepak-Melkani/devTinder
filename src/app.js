@@ -125,11 +125,26 @@ app.get('/admin/deleteAllData', (req, res, next) => {
 
 
 
+//Handling errors using try-catch and wildcard error handling middleware
+// If there is an error in the first callback, the second callback will not be executed
+// To pass the error to the next callback function, we need to use next(err)
+app.get('/userdata', (req, res, next) => {
+    try {
+        // Some code that may throw an error
+        throw new Error('Some error occurred while fetching user data');  // Simulating an error
+        res.send('User data');
+    } catch (err) {  
+        res.status(500).send('Internal Server Error');
+    }
+});
 
-
-
-
-
+app.use('/', (err, req, res, next) => { //Wildcard error handling middleware
+    if(err) {
+        // Log your error
+        res.status(500).send('Some error occurred');
+    }
+});
+  
 app.listen(3000, () => {
-  console.log('Server is successfullylistening on port 3000');
+  console.log('Server is successfully listening on port 3000');
 });
