@@ -23,3 +23,14 @@
 - Use of regex in routes
 - Reading the query params in the routes
 - Reading the dynamic routes
+
+
+- Multiple route handlers
+- next()
+- next() function and errors with res.send()
+- What is a middleware and why do we need it
+- How expressJS basically handles the req BTS
+- Read HTTP status codes
+- app.use() vs app.all()
+- Write a dummy auth middleware for admin
+- Write a dummy auth middleware for all user routes

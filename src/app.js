@@ -100,6 +100,33 @@ app.use(
 
 
 
+// When there are multiplle callbacks with the matching route then all of the one that sends the response is a request handler and rest is a chain of middlewares, and generally we use app.use() for middlewares
+
+
+
+
+
+
+// Example to demonstrate the use case of middlewares 
+const { adminAuth } = require('./middlewares/adminAuth.js');  // Importing the adminAuth middleware
+app.use('/admin', adminAuth);
+
+// All the routes starting with /admin will go through the adminAuth middleware first
+
+app.get('/admin/getAllData', (req, res, next) => { // It is guaranteed that this callback will be executed only if the user is admin
+   res.send('All the data from the server');
+})
+
+app.get('/admin/deleteAllData', (req, res, next) => {
+   res.send('All the data has been deleted from the server');
+});
+
+
+
+
+
+
+
 
 
 
