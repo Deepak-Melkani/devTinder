@@ -2,6 +2,8 @@ const express = require('express');
 const connectDB = require('./config/database');  
 const User = require('./models/user');
 const app = express();
+const { validateSignupData } = require('./utils/validation');
+const bcrypt = require('bcrypt');
 
 // Pushing the data to the database using a POST request
 // app.post('/signup', async (req, res) => {
@@ -23,16 +25,61 @@ const app = express();
 
 // Middleware to parse JSON bodies, enabling us to access the content of the request body
 app.use(express.json());
+// Don't directly use the req body as the attacker can send any data in the body which can break our application
+// Always validate the data before using it
+// Encrypt the password before saving it to the database using bcryptjs or any other library
 app.post('/signup', async (req, res) => {
     console.log(req.body); // Log the request body to the console
-    const user = new User(req.body); // Create a new user instance with the data from the request body
     try {
+        // Validate the signup data
+        validateSignupData(req); // Call the validation function to validate the request body from utils/validation.js
+
+        const { firstName, lastName, emailId, password } = req.body; // Destructure the request body to get the user details
+
+        // Hash the password before saving it to the database
+        const passwordHash = await bcrypt.hash(password, 10); // Hash the password with a salt round of 10
+        console.log(passwordHash); // Log the hashed password to the console    
+
+        const user = new User({
+            firstName, lastName, emailId, password: passwordHash
+        }); // Create a new user instance with the data from the request body
         await user.save(); // Save the user to the database
         res.send('User added successfully'); // Send a success response
     } catch (err) {
-        res.status(400).send('Error in saving the user', err); // Send an error response if saving fails
+        res.status(400).send('ERROR: ' + err.message); // Send an error response if saving fails
     }
 });
+
+
+
+app.post('/login', async (req, res) =>  {
+    try {
+        const {emailId, password} = req.body; // Destructure the request body to get emailId and password
+
+        // Write the code to check if the user with the given emailId exists in the database and if its valid
+        const user = await User.findOne({ emailId }); // Find the user by emailId
+        if(!user) {
+            throw new Error('Invalid credentials'); // Throw an error if the user is not found
+        }
+
+        // Compare the given password with the hashed password stored in the database using bcrypt.compare
+        const isPasswordValid = await bcrypt.compare(password, user.password); // Compare the given password with the hashed password
+        if(isPasswordValid) {
+            res.send('Login successful'); // Send a success response if the password is valid
+        } else {
+            throw new Error('Invalid credentials'); // Throw an error if the password is invalid
+        }
+
+
+
+
+    }catch(err) {
+        res.status(400).send('ERROR: ' + err.message);
+    }
+});
+
+
+
 
 // Get user by emailId
 app.get('/user', async (req, res) => {
