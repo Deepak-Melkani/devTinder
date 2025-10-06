@@ -50,3 +50,17 @@
 - If we use User.findOne() to find the user with given emailId but there exist duplicate entries, then which one will be returned
 - Create API to get users by emailId
 - Create Feed API - GET /feed - get all the users from the database
+- Create a delete user API
+- Difference in PATCH and PUT method
+- API - Update a user
+- Explore the Mongoose Documention for Model methods
+- What are options in a Model.findOneAndUpdate method, explore more about it
+- API - Update the user with email ID
+
+- Explore schematype options from the documention
+- add required, unique, lowercase, min, minLength, trim
+- Add default
+- Create a custom validate function for gender
+- Improve the DB schema - PUT all appropiate validations on each field in Schema
+- Add timestamps to the userSchema
+- 

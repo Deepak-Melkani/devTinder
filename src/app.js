@@ -30,7 +30,7 @@ app.post('/signup', async (req, res) => {
         await user.save(); // Save the user to the database
         res.send('User added successfully'); // Send a success response
     } catch (err) {
-        res.status(400).send('Error in saving the user'); // Send an error response if saving fails
+        res.status(400).send('Error in saving the user', err); // Send an error response if saving fails
     }
 });
 
@@ -61,6 +61,31 @@ app.get('/feed', async (req, res) => {
         res.status(400).send('Something went wrong');
     }
 });
+
+
+// Delete API to delete a user by id (id is not defined in the schema but mongoDB automatically creates it)
+app.delete('/user', async (req, res) => {
+    const userId = req.body.userId; // Get the userId from the request body
+    try {
+        const user = await User.findByIdAndDelete(userId); // Find the user by id and delete  
+        res.send("User deleted successfully"); // Send the deleted user data as the response
+    }catch(err) {
+        res.status(400).send('Something went wrong');
+    }
+});
+
+//Update the data of the user using PATCH request
+app.patch('/user', async (req, res) => {
+    const userId = req.body.userId; // Get the userId from the request body
+    const data = req.body; // Get the data from the request body
+    try{
+        const user = await User.findByIdAndUpdate(userId, data, 
+            {returnDocument: 'after', runValidators: true}); // Find the user by id and update with the new data, returnDocument: 'after' returns the updated document, runValidators: true runs the validators defined in the schema
+        res.send('User data updated successfully'); // Send a success response
+    }catch(err) {
+        res.status(400).send('Something went wrong');
+    }
+})
 
 
 
