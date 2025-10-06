@@ -1,5 +1,9 @@
 const mongoose = require('mongoose');  
 const validator = require('validator'); 
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+
+// Define the user schema with fields and their validations
 
 const userSchema = new mongoose.Schema({
     firstName: {
@@ -62,6 +66,26 @@ const userSchema = new mongoose.Schema({
     }
 }, { timestamps: true } // Automatically creates createdAt and updatedAt fields);
 );
+
+
+// Below are the instance methods or schema methods which can be called on a user instance
+
+userSchema.methods.getJWT = async function() {
+    const user = this; // 'this' refers to the user document on which the method is called
+    const token = await jwt.sign(
+                { userId: user._id }, // Payload containing the user ID, which will be encoded in the token  
+                'Dev@Tinder$777', // Secret key to sign the token (should be stored in environment variables)
+                { expiresIn: '1h' } // Token expiration time
+            );
+    return token; // Return the generated token
+}
+
+userSchema.methods.validatePassword = async function(password)  {
+    const user = this; // 'this' refers to the user document on which the method is called
+    const passwordHash = user.password; // Get the hashed password from the user document
+    const isPasswordValid = await bcrypt.compare(password, passwordHash); // Compare the given password with the hashed password
+    return isPasswordValid; // Return the result of the comparison
+}
 
 const User = mongoose.model('User', userSchema); // users is the name of the collection
 

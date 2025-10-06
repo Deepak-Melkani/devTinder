@@ -4,6 +4,14 @@ const User = require('./models/user');
 const app = express();
 const { validateSignupData } = require('./utils/validation');
 const bcrypt = require('bcrypt');
+const cookieParser = require('cookie-parser');
+const jwt = require('jsonwebtoken');
+const { userAuth } = require('./middlewares/auth');
+
+
+app.use(cookieParser()); // Middleware to parse cookies from the request
+
+app.use(express.json()); // Middleware to parse JSON bodies, enabling us to access the content of the request body
 
 // Pushing the data to the database using a POST request
 // app.post('/signup', async (req, res) => {
@@ -23,13 +31,10 @@ const bcrypt = require('bcrypt');
 // });
 
 
-// Middleware to parse JSON bodies, enabling us to access the content of the request body
-app.use(express.json());
 // Don't directly use the req body as the attacker can send any data in the body which can break our application
 // Always validate the data before using it
 // Encrypt the password before saving it to the database using bcryptjs or any other library
 app.post('/signup', async (req, res) => {
-    console.log(req.body); // Log the request body to the console
     try {
         // Validate the signup data
         validateSignupData(req); // Call the validation function to validate the request body from utils/validation.js
@@ -38,7 +43,6 @@ app.post('/signup', async (req, res) => {
 
         // Hash the password before saving it to the database
         const passwordHash = await bcrypt.hash(password, 10); // Hash the password with a salt round of 10
-        console.log(passwordHash); // Log the hashed password to the console    
 
         const user = new User({
             firstName, lastName, emailId, password: passwordHash
@@ -63,20 +67,41 @@ app.post('/login', async (req, res) =>  {
         }
 
         // Compare the given password with the hashed password stored in the database using bcrypt.compare
-        const isPasswordValid = await bcrypt.compare(password, user.password); // Compare the given password with the hashed password
+        const isPasswordValid = await user.validatePassword(password); // Compare the given password with the hashed password in the user document, the method validatePassword is defined in the user model
         if(isPasswordValid) {
+
+            // Create a JWT token (Created a method getJWT in user model to create a JWT token for a user instance and return it)
+            const token = await user.getJWT(); // Call the getJWT method on the user instance to get the JWT token 
+
+            // Add the token to the cookie and send it to the client
+            res.cookie('token', token); // Set a cookie named 'token' with the JWT token, can add expiry and httpOnly flag for security (refer the docs for more options)
+            
             res.send('Login successful'); // Send a success response if the password is valid
         } else {
             throw new Error('Invalid credentials'); // Throw an error if the password is invalid
         }
 
-
-
-
     }catch(err) {
         res.status(400).send('ERROR: ' + err.message);
     }
 });
+
+
+
+
+app.get('/profile', userAuth, async (req, res) => {
+    try {
+        const user = req.user; // Get the user from the request object
+       
+        res.send(user); // Send the user details as the response
+
+    }catch(err) {
+        res.status(400).send('ERROR: ' + err.message); // Send an error response if something goes wrong
+    }
+});
+
+
+
 
 
 
