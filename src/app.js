@@ -76,9 +76,15 @@ app.delete('/user', async (req, res) => {
 
 //Update the data of the user using PATCH request
 app.patch('/user', async (req, res) => {
-    const userId = req.body.userId; // Get the userId from the request body
+    const userId = req.body.userId; // Get the userId from the request body 
     const data = req.body; // Get the data from the request body
+    
     try{
+        const ALLOWED_UPDATES = ['password', 'age', 'gender', 'photoUrl', 'about', 'skills'];
+        const ISUpdateAllowed = Object.keys(data).every((update) => ALLOWED_UPDATES.includes(update)); // Check if all the fields to be updated are in the allowed updates array
+        if(!ISUpdateAllowed) {
+            throw new Error('Invalid updates!'); // Send a 400 response if any field is not allowed to be updated
+        }
         const user = await User.findByIdAndUpdate(userId, data, 
             {returnDocument: 'after', runValidators: true}); // Find the user by id and update with the new data, returnDocument: 'after' returns the updated document, runValidators: true runs the validators defined in the schema
         res.send('User data updated successfully'); // Send a success response
