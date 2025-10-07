@@ -45,7 +45,7 @@ authRouter.post('/login', async (req, res) =>  {
             const token = await user.getJWT(); // Call the getJWT method on the user instance to get the JWT token 
 
             // Add the token to the cookie and send it to the client
-            res.cookie('token', token); // Set a cookie named 'token' with the JWT token, can add expiry and httpOnly flag for security (refer the docs for more options)
+            res.cookie('token', token, {expires: new Date(Date.now() + 8 * 36000000)}); // Set a cookie named 'token' with the JWT token, can add expiry and httpOnly flag for security (refer the docs for more options)
             
             res.send('Login successful'); // Send a success response if the password is valid
         } else {
@@ -55,6 +55,11 @@ authRouter.post('/login', async (req, res) =>  {
     }catch(err) {
         res.status(400).send('ERROR: ' + err.message);
     }
+});
+
+authRouter.post('/logout', (req, res) => {
+    res.cookie('token', null, {expires: new Date(Date.now())}); // Set the token cookie to null and expire it immediately
+    res.send('Logout successful'); // Send a success response
 });
 
 
