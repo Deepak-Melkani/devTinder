@@ -12,10 +12,12 @@ app.use(express.json()); // Middleware to parse JSON bodies, enabling us to acce
 const authRouter = require('./routes/auth'); // Import the auth router to handle authentication routes
 const profileRouter = require('./routes/profile'); // Import the profile router to handle profile routes
 const requestRouter = require('./routes/requests'); // Import the requests router to handle connection request routes
+const userRouter = require('./routes/user');
 
 app.use('/', authRouter); // Use the auth router for routes starting with /auth
 app.use('/', profileRouter); // Use the profile router for routes starting with /user
 app.use('/', requestRouter); // Use the requests router for routes starting with /requests
+app.use('/', userRouter);
 
 // Pushing the data to the database using a POST request
 // app.post('/signup', async (req, res) => {
@@ -41,104 +43,64 @@ app.use('/', requestRouter); // Use the requests router for routes starting with
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // Get user by emailId
-app.get('/user', async (req, res) => {
-    const userEmail = req.body.emailId; // Get the emailId from the request body
-    try {
-        const user = await User.find({ emailId: userEmail }); // Find the user by emailId
-        if(user.length === 0){
-            res.status(404).send('User not found'); // Send a 404 response if the user is not found
-        }
-        else {
-            res.send(user); // Send the user data as the response
-        }
+// app.get('/user', async (req, res) => {
+//     const userEmail = req.body.emailId; // Get the emailId from the request body
+//     try {
+//         const user = await User.find({ emailId: userEmail }); // Find the user by emailId
+//         if(user.length === 0){
+//             res.status(404).send('User not found'); // Send a 404 response if the user is not found
+//         }
+//         else {
+//             res.send(user); // Send the user data as the response
+//         }
         
-    } catch (err) {
-        res.status(400).send('Something went wrong'); // Send an error response if the query fails
-    }
-});
+//     } catch (err) {
+//         res.status(400).send('Something went wrong'); // Send an error response if the query fails
+//     }
+// });
 
-// Feed API - GET /feed - get all the users from the database
-app.get('/feed', async (req, res) => {
-    try {
-        const users = await User.find({});
-        res.send(users); // Send all users as the response
-    }
-    catch(err) {
-        res.status(400).send('Something went wrong');
-    }
-});
+// // Feed API - GET /feed - get all the users from the database
+// app.get('/feed', async (req, res) => {
+//     try {
+//         const users = await User.find({});
+//         res.send(users); // Send all users as the response
+//     }
+//     catch(err) {
+//         res.status(400).send('Something went wrong');
+//     }
+// });
 
 
-// Delete API to delete a user by id (id is not defined in the schema but mongoDB automatically creates it)
-app.delete('/user', async (req, res) => {
-    const userId = req.body.userId; // Get the userId from the request body
-    try {
-        const user = await User.findByIdAndDelete(userId); // Find the user by id and delete  
-        res.send("User deleted successfully"); // Send the deleted user data as the response
-    }catch(err) {
-        res.status(400).send('Something went wrong');
-    }
-});
+// // Delete API to delete a user by id (id is not defined in the schema but mongoDB automatically creates it)
+// app.delete('/user', async (req, res) => {
+//     const userId = req.body.userId; // Get the userId from the request body
+//     try {
+//         const user = await User.findByIdAndDelete(userId); // Find the user by id and delete  
+//         res.send("User deleted successfully"); // Send the deleted user data as the response
+//     }catch(err) {
+//         res.status(400).send('Something went wrong');
+//     }
+// });
 
-//Update the data of the user using PATCH request
-app.patch('/user', async (req, res) => {
-    const userId = req.body.userId; // Get the userId from the request body 
-    const data = req.body; // Get the data from the request body
+// //Update the data of the user using PATCH request
+// app.patch('/user', async (req, res) => {
+//     const userId = req.body.userId; // Get the userId from the request body 
+//     const data = req.body; // Get the data from the request body
     
-    try{
-        const ALLOWED_UPDATES = ['password', 'age', 'gender', 'photoUrl', 'about', 'skills'];
-        const ISUpdateAllowed = Object.keys(data).every((update) => ALLOWED_UPDATES.includes(update)); // Check if all the fields to be updated are in the allowed updates array
-        if(!ISUpdateAllowed) {
-            throw new Error('Invalid updates!'); // Send a 400 response if any field is not allowed to be updated
-        }
-        const user = await User.findByIdAndUpdate(userId, data, 
-            {returnDocument: 'after', runValidators: true}); // Find the user by id and update with the new data, returnDocument: 'after' returns the updated document, runValidators: true runs the validators defined in the schema
-        res.send('User data updated successfully'); // Send a success response
-    }catch(err) {
-        res.status(400).send('Something went wrong');
-    }
-});
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+//     try{
+//         const ALLOWED_UPDATES = ['password', 'age', 'gender', 'photoUrl', 'about', 'skills'];
+//         const ISUpdateAllowed = Object.keys(data).every((update) => ALLOWED_UPDATES.includes(update)); // Check if all the fields to be updated are in the allowed updates array
+//         if(!ISUpdateAllowed) {
+//             throw new Error('Invalid updates!'); // Send a 400 response if any field is not allowed to be updated
+//         }
+//         const user = await User.findByIdAndUpdate(userId, data, 
+//             {returnDocument: 'after', runValidators: true}); // Find the user by id and update with the new data, returnDocument: 'after' returns the updated document, runValidators: true runs the validators defined in the schema
+//         res.send('User data updated successfully'); // Send a success response
+//     }catch(err) {
+//         res.status(400).send('Something went wrong');
+//     }
+// });
 
 
 
