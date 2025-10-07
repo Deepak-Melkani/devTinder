@@ -9,6 +9,7 @@ const userSchema = new mongoose.Schema({
     firstName: {
         type: String,
         required: true,
+        index: true,    // index is used to make the API faster, similar to indexing in books (helps to quickly find), if we use unique property then the index is added itself but in firstName we can't add the attribute unique. but avoid creating index for every field to make searching fast, use only where required since it is complex for database to manage indexing for multiple fields
         minLength: 2,
         maxLength: 30
     },
@@ -68,7 +69,10 @@ const userSchema = new mongoose.Schema({
 );
 
 
-// Below are the instance methods or schema methods which can be called on a user instance
+userSchema.index({firstName: 1, lastName: 1}); // Optimises the searching in API call if some call is of the form User.find({firstName: 'Akshay', lastName: 'Saini'}), the concept used is compound indexing
+
+
+// Below are the instance methods or schema methods which can be called on a user instance and we can't use arrow functions here as we need to use 'this' keyword
 
 userSchema.methods.getJWT = async function() {
     const user = this; // 'this' refers to the user document on which the method is called
